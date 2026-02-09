@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="canonical" href="https://amit.is-a.dev/nct-legacy.html" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NCT v2.11 | Legacy Edition</title>
@@ -68,7 +69,7 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        body {
+        html, body {
             font-family: var(--font-main);
             background-color: var(--md-sys-color-background);
             color: var(--md-sys-color-on-surface);
@@ -77,6 +78,7 @@
             flex-direction: column;
             align-items: center;
             overflow-x: hidden;
+            width: 100%;
             background-image: radial-gradient(circle at 50% 0%, rgba(208, 188, 255, 0.05) 0%, transparent 60%);
         }
 
@@ -173,6 +175,7 @@
             align-items: center;
             gap: 8px;
             transition: transform 0.1s;
+            white-space: nowrap; /* Prevent internal wrapping */
         }
         .tools-btn:active { transform: scale(0.95); }
         .tools-btn:hover { background: rgba(255,255,255,0.05); }
@@ -208,6 +211,7 @@
             transition: transform 0.4s var(--ease-elastic), box-shadow 0.2s;
             border: 1px solid transparent;
             z-index: 1;
+            min-width: 0; /* Prevents Grid Blowout */
         }
 
         .material-card:focus-within {
@@ -288,6 +292,8 @@
         /* INPUT AREA */
         .input-area {
             flex-grow: 1;
+            width: 100%;
+            max-width: 100%;
             background: transparent;
             border: none;
             color: var(--md-sys-color-on-surface);
@@ -297,6 +303,7 @@
             outline: none;
             line-height: 1.2;
             z-index: 1;
+            word-break: break-all; /* Ensure continuous numbers wrap */
         }
         .input-area::placeholder { color: var(--md-sys-color-on-surface-variant); opacity: 0.3; }
 
@@ -519,7 +526,7 @@
             font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
-            display: none; /* Hidden by default */
+            display: flex; /* Always visible if result exists */
             align-items: center;
             gap: 6px;
             transition: 0.2s;
@@ -561,6 +568,7 @@
             position: relative;
         }
         .viz-cell.carry { color: var(--md-sys-color-tertiary); font-size: 0.8rem; height: 20px; }
+        .viz-cell.borrow { color: var(--md-sys-color-error); font-size: 0.8rem; height: 20px; } /* NEW */
         .viz-cell.operator { color: var(--md-sys-color-primary); }
         .viz-cell.border-bottom { border-bottom: 2px solid var(--md-sys-color-outline); }
         .viz-cell.active-col { background: rgba(208, 188, 255, 0.15); border-radius: 4px; }
@@ -572,6 +580,7 @@
             color: var(--md-sys-color-on-surface-variant);
             font-family: var(--font-code);
             min-height: 20px;
+            white-space: pre-wrap; /* For multiline text */
         }
 
         /* --- CONVERTER STEPS PANEL --- */
@@ -763,15 +772,33 @@
 
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
+            .app-container { padding: 16px; }
             .converter-stage { grid-template-columns: 1fr; grid-template-rows: 1fr 64px 1fr; gap: 8px; }
-            .material-card { height: 260px; }
+            .material-card { height: 260px; padding: 16px; /* Tighter padding for mobile */ }
+            .input-area { font-size: 1.8rem; /* Smaller text for mobile */ }
             .swap-container { transform: rotate(90deg); }
             .swap-fab:hover { transform: rotate(180deg); }
-            .header-top { flex-direction: column; gap: 10px; }
+            .header-top { flex-direction: column; gap: 16px; }
+            .header-actions { flex-wrap: wrap; justify-content: center; }
             .calc-header { flex-direction: column; gap: 10px; }
-            .calc-result-area { margin-left: 0; justify-content: flex-end; width: 100%; }
-            .visualize-btn { margin-right: 0; margin-bottom: 10px; }
-            .calc-actions { flex-direction: column-reverse; align-items: stretch; }
+            
+            /* --- UPDATED MOBILE LAYOUT FOR VISUALIZER BTN --- */
+            .calc-actions { 
+                flex-direction: row; 
+                align-items: center; 
+                justify-content: space-between;
+                gap: 10px;
+            }
+            .visualize-btn { 
+                margin-right: 0; 
+                margin-bottom: 0;
+                flex-shrink: 0; 
+            }
+            .calc-result-area { 
+                width: auto; 
+                margin-left: auto;
+                justify-content: flex-end;
+            }
         }
     </style>
 </head>
@@ -792,6 +819,14 @@
             </div>
 
             <div class="header-actions">
+                <button class="tools-btn" onclick="window.open('https://amit.is-a.dev/code-nct-legacy', '_blank')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 18 22 12 16 6"></polyline>
+        <polyline points="8 6 2 12 8 18"></polyline>
+    </svg>
+    Source Code
+</button>
+
                 <button class="tools-btn" onclick="toggleHistory()">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
                     Versions
@@ -1437,15 +1472,20 @@
             if(error) {
                 resEl.textContent = "Invalid Input";
                 resEl.style.color = "var(--md-sys-color-error)";
-                vizBtn.style.display = 'none';
+                // vizBtn.style.display = 'none'; // Replaced to always show if result valid
             } else if(total === null) {
                 resEl.textContent = "0";
                 resEl.style.color = "var(--md-sys-color-primary)";
-                vizBtn.style.display = 'none';
+                // vizBtn.style.display = 'none'; // Replaced
             } else {
                 resEl.textContent = total.toString(base).toUpperCase();
                 resEl.style.color = "var(--md-sys-color-primary)";
-                vizBtn.style.display = (op === 'add') ? 'flex' : 'none';
+            }
+            // Always show visualize button if we have result
+            if(!error && total !== null) {
+                vizBtn.style.display = 'flex';
+            } else {
+                vizBtn.style.display = 'none';
             }
             document.getElementById('visualizerPanel').classList.remove('active');
         }
@@ -1458,8 +1498,6 @@
             const grid = document.getElementById('vizGrid');
             const info = document.getElementById('vizInfo');
             
-            if(op !== 'add') return;
-
             const inputs = [];
             let isValid = true;
             document.querySelectorAll('.calc-input').forEach(inp => {
@@ -1477,86 +1515,267 @@
 
             panel.classList.add('active');
             grid.innerHTML = '';
+            info.textContent = ''; // Clear previous
+
+            // === ADDITION (Existing Grid) ===
+            if (op === 'add') {
+                const digitArrays = inputs.map(n => n.toString(base).toUpperCase().split(''));
+                const maxLen = Math.max(...digitArrays.map(arr => arr.length)) + 1;
+                
+                const paddedArrays = digitArrays.map(arr => {
+                    const padding = new Array(maxLen - arr.length).fill('0');
+                    return padding.concat(arr);
+                });
+                
+                grid.style.gridTemplateColumns = `repeat(${maxLen}, 1fr)`;
+                
+                for(let i=0; i<maxLen; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'viz-cell carry';
+                    cell.id = `carry-${i}`;
+                    grid.appendChild(cell);
+                }
+                
+                paddedArrays.forEach((rowDigits, rIdx) => {
+                    for(let i=0; i<maxLen; i++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'viz-cell';
+                        if(rIdx === paddedArrays.length -1) cell.classList.add('border-bottom');
+                        const val = rowDigits[i];
+                        cell.textContent = val;
+                        if(i === 0 && rIdx > 0) {
+                            cell.classList.add('operator');
+                            cell.innerHTML = `+ ${val}`;
+                        }
+                        grid.appendChild(cell);
+                    }
+                });
+
+                for(let i=0; i<maxLen; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'viz-cell result';
+                    cell.id = `res-${i}`;
+                    cell.textContent = '?';
+                    grid.appendChild(cell);
+                }
+
+                let carry = 0;
+                let colIdx = maxLen - 1;
+
+                function stepAdd() {
+                    if(colIdx < 0) {
+                        info.textContent = "Addition Complete.";
+                        return;
+                    }
+                    document.querySelectorAll('.active-col').forEach(el => el.classList.remove('active-col'));
+                    const resCell = document.getElementById(`res-${colIdx}`);
+                    resCell.classList.add('active-col');
+                    
+                    let sum = carry;
+                    const digitVals = [];
+                    paddedArrays.forEach(row => {
+                        const char = row[colIdx];
+                        const val = parseInt(char, base);
+                        sum += val;
+                        digitVals.push(val.toString(base).toUpperCase());
+                    });
+
+                    const writeVal = sum % base;
+                    const newCarry = Math.floor(sum / base);
+
+                    resCell.textContent = writeVal.toString(base).toUpperCase();
+                    if(newCarry > 0 && colIdx > 0) {
+                        document.getElementById(`carry-${colIdx-1}`).textContent = newCarry.toString(base).toUpperCase();
+                    }
+                    
+                    const eqStr = `${digitVals.join('+')} + ${carry}(c) = ${sum}`;
+                    const writeStr = writeVal.toString(base).toUpperCase();
+                    const carryStr = newCarry.toString(base).toUpperCase();
+                    info.textContent = `Col ${maxLen - colIdx}: ${eqStr} (Base ${base}). Write ${writeStr}, Carry ${carryStr}`;
+
+                    carry = newCarry;
+                    colIdx--;
+                    setTimeout(stepAdd, 1000);
+                }
+                stepAdd();
             
-            const digitArrays = inputs.map(n => n.toString(base).toUpperCase().split(''));
-            const maxLen = Math.max(...digitArrays.map(arr => arr.length)) + 1;
-            
-            const paddedArrays = digitArrays.map(arr => {
-                const padding = new Array(maxLen - arr.length).fill('0');
-                return padding.concat(arr);
-            });
-            
-            grid.style.gridTemplateColumns = `repeat(${maxLen}, 1fr)`;
-            
-            for(let i=0; i<maxLen; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'viz-cell carry';
-                cell.id = `carry-${i}`;
-                grid.appendChild(cell);
-            }
-            
-            paddedArrays.forEach((rowDigits, rIdx) => {
+            // === SUBTRACTION (Grid with Borrows) ===
+            } else if (op === 'sub') {
+                if(inputs.length > 2) {
+                    info.textContent = "Visualizer supports max 2 numbers for Subtraction.";
+                    return;
+                }
+                const num1 = inputs[0];
+                const num2 = inputs[1];
+
+                if(num1 < num2) {
+                    info.textContent = "Visualization requires Positive Result (Num1 >= Num2).";
+                    return;
+                }
+
+                const arr1 = num1.toString(base).toUpperCase().split('');
+                const arr2 = num2.toString(base).toUpperCase().split('');
+                const maxLen = Math.max(arr1.length, arr2.length);
+
+                const p1 = new Array(maxLen - arr1.length).fill('0').concat(arr1);
+                const p2 = new Array(maxLen - arr2.length).fill('0').concat(arr2);
+
+                grid.style.gridTemplateColumns = `repeat(${maxLen}, 1fr)`;
+
+                // Row 0: Borrows
+                for(let i=0; i<maxLen; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'viz-cell borrow';
+                    cell.id = `borrow-${i}`;
+                    grid.appendChild(cell);
+                }
+                // Row 1: Minuend
                 for(let i=0; i<maxLen; i++) {
                     const cell = document.createElement('div');
                     cell.className = 'viz-cell';
-                    if(rIdx === paddedArrays.length -1) cell.classList.add('border-bottom');
-                    const val = rowDigits[i];
-                    cell.textContent = val;
-                    if(i === 0 && rIdx > 0) {
+                    cell.textContent = p1[i];
+                    grid.appendChild(cell);
+                }
+                // Row 2: Subtrahend
+                for(let i=0; i<maxLen; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'viz-cell border-bottom';
+                    cell.textContent = p2[i];
+                    if(i === 0) {
                         cell.classList.add('operator');
-                        cell.innerHTML = `+ ${val}`;
+                        cell.innerHTML = `- ${p2[i]}`;
                     }
                     grid.appendChild(cell);
                 }
-            });
+                // Row 3: Result
+                for(let i=0; i<maxLen; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'viz-cell result';
+                    cell.id = `res-sub-${i}`;
+                    cell.textContent = '?';
+                    grid.appendChild(cell);
+                }
 
-            for(let i=0; i<maxLen; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'viz-cell result';
-                cell.id = `res-${i}`;
-                cell.textContent = '?';
-                grid.appendChild(cell);
-            }
+                let borrow = 0;
+                let colIdx = maxLen - 1;
 
-            let carry = 0;
-            let colIdx = maxLen - 1;
+                function stepSub() {
+                    if(colIdx < 0) {
+                        info.textContent = "Subtraction Complete.";
+                        return;
+                    }
+                    document.querySelectorAll('.active-col').forEach(el => el.classList.remove('active-col'));
+                    const resCell = document.getElementById(`res-sub-${colIdx}`);
+                    resCell.classList.add('active-col');
 
-            function step() {
-                if(colIdx < 0) {
-                    info.textContent = "Complete.";
+                    let val1 = parseInt(p1[colIdx], base);
+                    let val2 = parseInt(p2[colIdx], base);
+                    
+                    // Apply borrow from previous step
+                    let effectiveVal1 = val1 - borrow;
+                    
+                    let diff = effectiveVal1 - val2;
+                    let nextBorrow = 0;
+
+                    if (diff < 0) {
+                        diff += base;
+                        nextBorrow = 1;
+                    }
+
+                    resCell.textContent = diff.toString(base).toUpperCase();
+                    
+                    if(nextBorrow > 0 && colIdx > 0) {
+                        document.getElementById(`borrow-${colIdx-1}`).textContent = "1";
+                    }
+
+                    const debugStr = `(${val1} - ${borrow}) - ${val2}`;
+                    const resStr = diff.toString(base).toUpperCase();
+                    info.textContent = `Col ${maxLen - colIdx}: ${debugStr}. Result ${resStr} (Base ${base}). ${nextBorrow ? 'Borrowed from Left.' : ''}`;
+
+                    borrow = nextBorrow;
+                    colIdx--;
+                    setTimeout(stepSub, 1200);
+                }
+                stepSub();
+
+            // === MULTIPLICATION (Text Steps) ===
+            } else if (op === 'mul') {
+                 if(inputs.length > 2) {
+                    info.textContent = "Visualizer supports max 2 numbers for Multiplication.";
                     return;
                 }
-                document.querySelectorAll('.active-col').forEach(el => el.classList.remove('active-col'));
-                const resCell = document.getElementById(`res-${colIdx}`);
-                resCell.classList.add('active-col');
+                grid.style.display = 'none'; // Hide grid for text mode
+                info.style.whiteSpace = 'pre-wrap';
                 
-                let sum = carry;
-                const digitVals = [];
-                paddedArrays.forEach(row => {
-                    const char = row[colIdx];
-                    const val = parseInt(char, base);
-                    sum += val;
-                    digitVals.push(val.toString(base).toUpperCase());
+                const num1 = inputs[0];
+                const num2 = inputs[1];
+                let output = `Multiplying ${num1.toString(base).toUpperCase()} × ${num2.toString(base).toUpperCase()} (Base ${base})\n`;
+                output += `-------------------------------------------------\n`;
+
+                const d1 = num1.toString(base).toUpperCase();
+                const d2 = num2.toString(base).toUpperCase();
+                
+                // Show Partial Products
+                const digits2 = d2.split('').reverse();
+                let partials = [];
+                
+                digits2.forEach((digitChar, i) => {
+                    const digitVal = parseInt(digitChar, base);
+                    const product = num1 * digitVal;
+                    const shift = "0".repeat(i);
+                    const pStr = product.toString(base).toUpperCase();
+                    
+                    output += `Digit ${digitChar}: ${d1} × ${digitChar} = ${pStr}`;
+                    if(i > 0) output += ` (shift ${i}: ${pStr}${shift})`;
+                    output += "\n";
+                    partials.push(product * Math.pow(base, i));
                 });
 
-                const writeVal = sum % base;
-                const newCarry = Math.floor(sum / base);
-
-                resCell.textContent = writeVal.toString(base).toUpperCase();
-                if(newCarry > 0 && colIdx > 0) {
-                    document.getElementById(`carry-${colIdx-1}`).textContent = newCarry.toString(base).toUpperCase();
-                }
+                const total = partials.reduce((a,b) => a+b, 0);
+                output += `-------------------------------------------------\n`;
+                output += `Sum of Partials: ${total.toString(base).toUpperCase()}`;
                 
-                const eqStr = `${digitVals.join('+')} + ${carry}(c) = ${sum}`;
-                const writeStr = writeVal.toString(base).toUpperCase();
-                const carryStr = newCarry.toString(base).toUpperCase();
-                info.textContent = `Col ${maxLen - colIdx}: ${eqStr} (Base ${base}). Write ${writeStr}, Carry ${carryStr}`;
+                info.textContent = output;
+                grid.style.display = 'grid'; // Reset for others
 
-                carry = newCarry;
-                colIdx--;
-                setTimeout(step, 800);
+            // === DIVISION (Text Steps) ===
+            } else if (op === 'div') {
+                 if(inputs.length > 2) {
+                    info.textContent = "Visualizer supports max 2 numbers for Division.";
+                    return;
+                }
+                grid.style.display = 'none';
+                info.style.whiteSpace = 'pre-wrap';
+                
+                const dividend = inputs[0];
+                const divisor = inputs[1];
+
+                if(divisor === 0) {
+                    info.textContent = "Cannot divide by Zero.";
+                    grid.style.display = 'grid';
+                    return;
+                }
+
+                let output = `Dividing ${dividend.toString(base).toUpperCase()} ÷ ${divisor.toString(base).toUpperCase()} (Base ${base})\n`;
+                output += `-------------------------------------------------\n`;
+
+                const quotient = Math.floor(dividend / divisor);
+                const remainder = dividend % divisor;
+
+                // Simple Euclidean explanation
+                output += `1. Integer Division in Decimal:\n`;
+                output += `   ${dividend} ÷ ${divisor} = ${quotient} (Quotient)\n`;
+                output += `   Remainder: ${remainder}\n\n`;
+                
+                output += `2. Convert Results to Base ${base}:\n`;
+                output += `   Quotient:  ${quotient.toString(base).toUpperCase()}\n`;
+                output += `   Remainder: ${remainder.toString(base).toUpperCase()}\n`;
+                output += `-------------------------------------------------\n`;
+                output += `Result: ${quotient.toString(base).toUpperCase()} r${remainder.toString(base).toUpperCase()}`;
+
+                info.textContent = output;
+                grid.style.display = 'grid';
             }
-            step();
         }
 
         /* --- UTILS & SWAP --- */
