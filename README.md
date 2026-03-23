@@ -1,3 +1,10 @@
+> [!WARNING]
+> ## LOW ACTIVITY REPOSITORY
+>
+> This project is not abandoned, but it receives updates very infrequently. <br>
+> ***Issues and Pull Requests may be submitted, but expect significant delays in reviews.***
+---
+
 # NCT (Number Conversion Tool) v2.11
 
 A high-performance, modern web application for number system conversion and arithmetic.
